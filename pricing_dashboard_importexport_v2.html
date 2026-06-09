@@ -1,0 +1,485 @@
+
+<h2 class="sr-only">App de precificação empresarial para importação e exportação com grupos de custo</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{font-family:var(--font-sans);padding:1.25rem 0}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:36px;height:36px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+.brand h1{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.brand p{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+.nav{display:flex;gap:2px;background:var(--color-background-secondary);padding:3px;border-radius:8px;flex-wrap:wrap}
+.nav-btn{padding:5px 12px;font-size:12px;border:none;background:transparent;cursor:pointer;border-radius:6px;color:var(--color-text-secondary);font-family:var(--font-sans);white-space:nowrap}
+.nav-btn.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary)}
+.view{display:none}.view.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem}
+.kpi{background:var(--color-background-secondary);border-radius:8px;padding:.875rem 1rem}
+.kpi .lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.kpi .sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.kpi .val.g{color:#1D9E75}.kpi .val.r{color:#E24B4A}.kpi .val.b{color:#378ADD}.kpi .val.a{color:#BA7517}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:1.125rem;margin-bottom:1rem}
+.panel-hd{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:1rem;display:flex;align-items:center;gap:7px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.chart-wrap{position:relative;width:100%}
+.groups-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+.grp-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;font-size:13px;color:var(--color-text-secondary);font-family:var(--font-sans);transition:background .15s}
+.grp-btn:hover{background:var(--color-background-secondary)}
+.grp-btn.active{border-width:1.5px;font-weight:500}
+.grp-btn .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.grp-btn .cnt{font-size:11px;background:var(--color-background-secondary);border-radius:100px;padding:1px 6px;color:var(--color-text-tertiary)}
+.grp-panel{display:none}.grp-panel.active{display:block}
+.items-table{width:100%;border-collapse:collapse;font-size:13px}
+.items-table th{text-align:left;padding:7px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);text-transform:uppercase;letter-spacing:.04em}
+.items-table td{padding:9px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:middle}
+.items-table tr:last-child td{border-bottom:none}
+.items-table tr:hover td{background:var(--color-background-secondary)}
+.add-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-top:.875rem}
+.add-row.wide{grid-template-columns:2fr 1fr 1fr auto}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:11px;color:var(--color-text-secondary)}
+.fg input,.fg select{padding:7px 9px;border:0.5px solid var(--color-border-secondary);border-radius:7px;background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans);width:100%}
+.fg input:focus,.fg select:focus{outline:none;border-color:#378ADD}
+.btn{padding:7px 13px;border-radius:7px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:12px;cursor:pointer;font-family:var(--font-sans);white-space:nowrap}
+.btn:hover{background:var(--color-background-secondary)}
+.btn-p{background:#185FA5;border-color:#185FA5;color:#fff}.btn-p:hover{background:#0C447C}
+.btn-d{color:#E24B4A;border-color:var(--color-border-tertiary)}.btn-d:hover{background:#FCEBEB}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
+.sep{height:0.5px;background:var(--color-border-tertiary);margin:.875rem 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500}
+.bg{background:#EAF3DE;color:#3B6D11}.br{background:#FCEBEB;color:#A32D2D}.ba{background:#FAEEDA;color:#854F0B}.bb{background:#E6F1FB;color:#185FA5}
+.empty{text-align:center;color:var(--color-text-tertiary);padding:1.5rem;font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--color-text-secondary)}
+.legend span{display:flex;align-items:center;gap:5px}
+.ld{width:10px;height:10px;border-radius:2px}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.slider-row label{font-size:12px;color:var(--color-text-secondary);min-width:120px}
+.slider-row .sv{font-size:12px;font-weight:500;min-width:70px;text-align:right}
+.import-zone{border:1.5px dashed var(--color-border-secondary);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer}
+.import-zone:hover{border-color:#378ADD}
+.import-zone i{font-size:28px;color:var(--color-text-tertiary);display:block;margin-bottom:6px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:12px;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary);margin:3px}
+.edit-in{padding:5px 7px;border:0.5px solid var(--color-border-secondary);border-radius:5px;background:var(--color-background-primary);color:var(--color-text-primary);font-size:12px;font-family:var(--font-sans);width:90px}
+.toast{position:fixed;bottom:24px;right:24px;background:#1D9E75;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+</style>
+
+<div class="app">
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon"><i class="ti ti-ship" aria-hidden="true"></i></div>
+    <div>
+      <h1>TradePrice</h1>
+      <p>Gestão de custos — importação & exportação</p>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchView('dashboard')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard</button>
+    <button class="nav-btn" onclick="switchView('grupos')"><i class="ti ti-layers-difference" aria-hidden="true"></i> Grupos de custo</button>
+    <button class="nav-btn" onclick="switchView('precificar')"><i class="ti ti-calculator" aria-hidden="true"></i> Precificar</button>
+    <button class="nav-btn" onclick="switchView('importar')"><i class="ti ti-upload" aria-hidden="true"></i> Importar</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="view-dashboard" class="view active">
+  <div class="kpis" id="kpi-area"></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-hd"><i class="ti ti-chart-bar" aria-hidden="true"></i> Custo total por grupo</div>
+      <div class="legend" id="leg-grp"></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-grupos" role="img" aria-label="Custo total por grupo de despesa"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd"><i class="ti ti-chart-donut-3" aria-hidden="true"></i> Participação percentual</div>
+      <div class="legend" id="leg-pie"></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-pie" role="img" aria-label="Participação percentual de cada grupo no custo total"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-hd"><i class="ti ti-table" aria-hidden="true"></i> Detalhamento por grupo — top itens</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="c-detail" role="img" aria-label="Detalhamento de itens por grupo de custo"></canvas></div>
+  </div>
+</div>
+
+<!-- GRUPOS DE CUSTO -->
+<div id="view-grupos" class="view">
+  <div class="groups-bar" id="groups-bar"></div>
+  <div id="grupos-panels"></div>
+</div>
+
+<!-- PRECIFICAR -->
+<div id="view-precificar" class="view">
+  <div class="panel">
+    <div class="panel-hd"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i> Simulador de precificação</div>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem">Base automática: custo total dos grupos cadastrados. Ajuste os parâmetros abaixo.</p>
+    <div class="kpis" style="margin-bottom:1.25rem" id="prec-kpis"></div>
+    <div class="slider-row"><label>Markup (%)</label><input type="range" id="sl-markup" min="5" max="150" step="1" value="40" oninput="runSim()"><span class="sv" id="sv-markup">40%</span></div>
+    <div class="slider-row"><label>Unidades / mês</label><input type="range" id="sl-un" min="1" max="500" step="1" value="30" oninput="runSim()"><span class="sv" id="sv-un">30 un.</span></div>
+    <div class="slider-row"><label>Frete / despesa extra (R$)</label><input type="range" id="sl-extra" min="0" max="10000" step="100" value="0" oninput="runSim()"><span class="sv" id="sv-extra">R$ 0</span></div>
+    <div class="sep"></div>
+    <div class="chart-wrap" style="height:220px"><canvas id="c-sim" role="img" aria-label="Composição do preço simulado"></canvas></div>
+  </div>
+</div>
+
+<!-- IMPORTAR -->
+<div id="view-importar" class="view">
+  <div class="panel">
+    <div class="panel-hd"><i class="ti ti-upload" aria-hidden="true"></i> Importar planilha</div>
+    <div class="import-zone" onclick="document.getElementById('finp').click()">
+      <i class="ti ti-file-spreadsheet" aria-hidden="true"></i>
+      <p style="font-size:14px;color:var(--color-text-secondary)">Clique ou arraste seu arquivo</p>
+      <p style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px">Suporta .xlsx · .xls · .csv — Excel, Power BI export, Word tabelas</p>
+    </div>
+    <input type="file" id="finp" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)"/>
+    <div id="imp-result" style="margin-top:.75rem"></div>
+    <div class="sep"></div>
+    <div class="panel-hd" style="margin-bottom:.5rem"><i class="ti ti-info-circle" aria-hidden="true"></i> Colunas esperadas na planilha</div>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Cada linha = um item de custo</p>
+    <div>
+      <span class="tag">grupo</span><span class="tag">nome</span><span class="tag">quantidade</span><span class="tag">custo_unitario</span><span class="tag">categoria</span>
+    </div>
+    <p style="font-size:12px;color:var(--color-text-tertiary);margin-top:.75rem">O campo <strong>grupo</strong> deve ser: Pessoal, Equipamentos, Sistema, Internet ou Insumos</p>
+    <div class="btn-row">
+      <button class="btn" onclick="exportCSV()"><i class="ti ti-download" aria-hidden="true"></i> Exportar CSV atual</button>
+      <button class="btn" onclick="sendPrompt('Gere um modelo de planilha Excel para importar custos no TradePrice com as colunas: grupo, nome, quantidade, custo_unitario, categoria. Inclua exemplos de importação e exportação. ↗')">Gerar modelo Excel ↗</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const GROUPS = [
+  { id:'pessoal', label:'Pessoal', icon:'ti-users', color:'#378ADD', light:'#E6F1FB', dark:'#185FA5',
+    items:[
+      {nome:'Líder de operações', qtd:1, unit:5800, cat:'CLT'},
+      {nome:'Auxiliares', qtd:4, unit:2100, cat:'CLT'},
+      {nome:'Motoristas', qtd:2, unit:2800, cat:'CLT'},
+      {nome:'Vistoriadores', qtd:2, unit:3200, cat:'CLT'},
+      {nome:'Operadores', qtd:3, unit:2400, cat:'CLT'},
+    ]},
+  { id:'equipamentos', label:'Equipamentos', icon:'ti-forklift', color:'#1D9E75', light:'#E1F5EE', dark:'#0F6E56',
+    items:[
+      {nome:'Empilhadeira', qtd:2, unit:1800, cat:'Aluguel/mês'},
+      {nome:'Rampa de acesso', qtd:1, unit:600, cat:'Aluguel/mês'},
+      {nome:'Implementos empilhadeira', qtd:1, unit:350, cat:'Manutenção'},
+      {nome:'Outdoor', qtd:1, unit:900, cat:'Marketing'},
+      {nome:'Coletes de segurança', qtd:10, unit:45, cat:'EPI'},
+      {nome:'Celulares corporativos', qtd:5, unit:120, cat:'Mensal'},
+    ]},
+  { id:'sistema', label:'Sistema', icon:'ti-cpu', color:'#7F77DD', light:'#EEEDFE', dark:'#3C3489',
+    items:[
+      {nome:'Licença ERP mensal', qtd:1, unit:1200, cat:'SaaS'},
+      {nome:'Hospedagem cloud', qtd:1, unit:480, cat:'Infraestrutura'},
+    ]},
+  { id:'internet', label:'Internet', icon:'ti-wifi', color:'#EF9F27', light:'#FAEEDA', dark:'#854F0B',
+    items:[
+      {nome:'5G corporativo', qtd:5, unit:110, cat:'Mensal'},
+    ]},
+  { id:'insumos', label:'Insumos', icon:'ti-package', color:'#D4537E', light:'#FBEAF0', dark:'#72243E',
+    items:[
+      {nome:'Etiquetas BOPP', qtd:5000, unit:0.08, cat:'Consumível'},
+      {nome:'Ribbon para impressora', qtd:20, unit:18, cat:'Consumível'},
+      {nome:'Materiais de escritório', qtd:1, unit:280, cat:'Mensal'},
+    ]},
+];
+
+let activeGroup = 'pessoal';
+let charts = {};
+
+function groupTotal(g){ return g.items.reduce((a,i)=>a+i.qtd*i.unit,0); }
+function allTotal(){ return GROUPS.reduce((a,g)=>a+groupTotal(g),0); }
+function fmt(v){ return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtN(v){ return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+function switchView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  const idx={dashboard:0,grupos:1,precificar:2,importar:3}[v];
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  if(v==='dashboard') setTimeout(renderDashboard,40);
+  if(v==='grupos') renderGrupos();
+  if(v==='precificar') setTimeout(runSim,40);
+}
+
+// ---- DASHBOARD ----
+function renderDashboard(){
+  const total=allTotal();
+  const kArea=document.getElementById('kpi-area');
+  kArea.innerHTML=`
+    <div class="kpi"><div class="lbl">Custo total mensal</div><div class="val r">${fmt(total)}</div><div class="sub">todos os grupos</div></div>
+    <div class="kpi"><div class="lbl">Grupos ativos</div><div class="val b">${GROUPS.length}</div><div class="sub">categorias</div></div>
+    <div class="kpi"><div class="lbl">Total de itens</div><div class="val">${GROUPS.reduce((a,g)=>a+g.items.length,0)}</div><div class="sub">despesas cadastradas</div></div>
+    <div class="kpi"><div class="lbl">Maior grupo</div><div class="val a">${GROUPS.slice().sort((a,b)=>groupTotal(b)-groupTotal(a))[0].label}</div><div class="sub">${fmt(Math.max(...GROUPS.map(g=>groupTotal(g))))}</div></div>
+  `;
+
+  const labels=GROUPS.map(g=>g.label);
+  const totals=GROUPS.map(g=>groupTotal(g));
+  const colors=GROUPS.map(g=>g.color);
+
+  document.getElementById('leg-grp').innerHTML=GROUPS.map(g=>`<span><span class="ld" style="background:${g.color}"></span>${g.label}</span>`).join('');
+  document.getElementById('leg-pie').innerHTML=GROUPS.map(g=>`<span><span class="ld" style="background:${g.color}"></span>${g.label} ${(groupTotal(g)/total*100).toFixed(1)}%</span>`).join('');
+
+  if(charts.grp) charts.grp.destroy();
+  charts.grp=new Chart(document.getElementById('c-grupos'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Custo mensal',data:totals.map(v=>Math.round(v)),backgroundColor:colors.map(c=>c+'cc'),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+  });
+
+  if(charts.pie) charts.pie.destroy();
+  charts.pie=new Chart(document.getElementById('c-pie'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:totals.map(v=>Math.round(v)),backgroundColor:colors.map(c=>c+'cc'),borderWidth:2,borderColor:'transparent'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'60%'}
+  });
+
+  const topItems=[];
+  GROUPS.forEach(g=>g.items.forEach(i=>topItems.push({label:i.nome.length>16?i.nome.slice(0,16)+'…':i.nome,val:Math.round(i.qtd*i.unit),color:g.color})));
+  topItems.sort((a,b)=>b.val-a.val);
+  const top8=topItems.slice(0,8);
+
+  if(charts.detail) charts.detail.destroy();
+  charts.detail=new Chart(document.getElementById('c-detail'),{
+    type:'bar',
+    data:{labels:top8.map(i=>i.label),datasets:[{label:'Custo',data:top8.map(i=>i.val),backgroundColor:top8.map(i=>i.color+'cc'),borderRadius:3}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+  });
+}
+
+// ---- GRUPOS ----
+function renderGrupos(){
+  const bar=document.getElementById('groups-bar');
+  bar.innerHTML=GROUPS.map(g=>`
+    <button class="grp-btn${g.id===activeGroup?' active':''}" style="${g.id===activeGroup?`border-color:${g.color};color:${g.color}`:''}" onclick="selectGroup('${g.id}')">
+      <span class="dot" style="background:${g.color}"></span>
+      <i class="ti ${g.icon}" aria-hidden="true"></i>
+      ${g.label}
+      <span class="cnt">${g.items.length}</span>
+    </button>`).join('');
+
+  const panels=document.getElementById('grupos-panels');
+  panels.innerHTML=GROUPS.map(g=>`
+    <div id="gp-${g.id}" class="grp-panel${g.id===activeGroup?' active':''}">
+      <div class="panel">
+        <div class="panel-hd" style="color:${g.color}"><i class="ti ${g.icon}" aria-hidden="true"></i> ${g.label} <span style="margin-left:auto;font-size:12px;color:var(--color-text-secondary)">Total: <strong>${fmt(groupTotal(g))}</strong>/mês</span></div>
+        <div style="overflow-x:auto">
+          <table class="items-table">
+            <thead><tr><th>Item</th><th>Qtd</th><th>Custo unit. (R$)</th><th>Total/mês</th><th>Categoria</th><th></th></tr></thead>
+            <tbody id="tb-${g.id}">${renderRows(g)}</tbody>
+          </table>
+        </div>
+        <div class="add-row" id="ar-${g.id}">
+          <div class="fg"><label>Nome</label><input id="ai-nome-${g.id}" placeholder="Novo item"/></div>
+          <div class="fg"><label>Qtd</label><input id="ai-qtd-${g.id}" type="number" value="1" min="1"/></div>
+          <div class="fg"><label>Custo unit.</label><input id="ai-unit-${g.id}" type="number" placeholder="0,00"/></div>
+          <div class="fg"><label>Categoria</label><input id="ai-cat-${g.id}" placeholder="ex: CLT"/></div>
+          <div class="fg"><label>&nbsp;</label><button class="btn btn-p" style="padding:7px 10px" onclick="addItem('${g.id}')"><i class="ti ti-plus" aria-hidden="true"></i></button></div>
+        </div>
+      </div>
+      <div class="panel" style="padding:.875rem 1.125rem">
+        <div class="panel-hd"><i class="ti ti-chart-bar" aria-hidden="true"></i> Distribuição interna — ${g.label}</div>
+        <div class="chart-wrap" style="height:180px"><canvas id="cg-${g.id}" role="img" aria-label="Gráfico de barras de custos dentro do grupo ${g.label}"></canvas></div>
+      </div>
+    </div>`).join('');
+
+  GROUPS.forEach(g=>renderGroupChart(g));
+}
+
+function renderRows(g){
+  if(!g.items.length) return `<tr><td colspan="6" class="empty">Nenhum item. Adicione abaixo.</td></tr>`;
+  return g.items.map((it,idx)=>`
+    <tr>
+      <td style="font-weight:500">${it.nome}</td>
+      <td><input class="edit-in" type="number" min="1" value="${it.qtd}" onchange="editItem('${g.id}',${idx},'qtd',this.value)"/></td>
+      <td><input class="edit-in" type="number" value="${it.unit}" onchange="editItem('${g.id}',${idx},'unit',this.value)"/></td>
+      <td style="font-weight:500;color:${g.color}">${fmt(it.qtd*it.unit)}</td>
+      <td><span class="badge bb" style="background:${g.light};color:${g.dark}">${it.cat}</span></td>
+      <td><button class="btn btn-d" style="padding:4px 8px;font-size:11px" onclick="removeItem('${g.id}',${idx})"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+    </tr>`).join('');
+}
+
+function renderGroupChart(g){
+  const el=document.getElementById('cg-'+g.id);
+  if(!el) return;
+  const ckey='gc_'+g.id;
+  if(charts[ckey]) charts[ckey].destroy();
+  if(!g.items.length) return;
+  charts[ckey]=new Chart(el,{
+    type:'bar',
+    data:{
+      labels:g.items.map(i=>i.nome.length>14?i.nome.slice(0,14)+'…':i.nome),
+      datasets:[{label:'Custo/mês',data:g.items.map(i=>Math.round(i.qtd*i.unit)),backgroundColor:g.color+'cc',borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'R$ '+v.toLocaleString('pt-BR')}},x:{ticks:{autoSkip:false,maxRotation:35}}}}
+  });
+}
+
+function selectGroup(id){
+  activeGroup=id;
+  document.querySelectorAll('.grp-btn').forEach((b,i)=>{
+    b.classList.remove('active');
+    b.style.borderColor=''; b.style.color='';
+  });
+  const g=GROUPS.find(x=>x.id===id);
+  const idx=GROUPS.findIndex(x=>x.id===id);
+  const btns=document.querySelectorAll('.grp-btn');
+  btns[idx].classList.add('active');
+  btns[idx].style.borderColor=g.color;
+  btns[idx].style.color=g.color;
+  document.querySelectorAll('.grp-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('gp-'+id).classList.add('active');
+}
+
+function addItem(gid){
+  const g=GROUPS.find(x=>x.id===gid);
+  const nome=document.getElementById(`ai-nome-${gid}`).value.trim();
+  const qtd=parseFloat(document.getElementById(`ai-qtd-${gid}`).value)||1;
+  const unit=parseFloat(document.getElementById(`ai-unit-${gid}`).value)||0;
+  const cat=document.getElementById(`ai-cat-${gid}`).value.trim()||'—';
+  if(!nome){alert('Informe o nome do item.');return;}
+  g.items.push({nome,qtd,unit,cat});
+  ['nome','qtd','unit','cat'].forEach(f=>{const el=document.getElementById(`ai-${f}-${gid}`);if(el){el.value=f==='qtd'?'1':'';} });
+  refreshGroup(g);
+  toast('Item adicionado');
+}
+
+function removeItem(gid,idx){
+  const g=GROUPS.find(x=>x.id===gid);
+  g.items.splice(idx,1);
+  refreshGroup(g);
+  toast('Item removido');
+}
+
+function editItem(gid,idx,field,val){
+  const g=GROUPS.find(x=>x.id===gid);
+  g.items[idx][field]=parseFloat(val)||0;
+  document.getElementById(`tb-${gid}`).innerHTML=renderRows(g);
+  rebindEdits(gid);
+  const hd=document.querySelector(`#gp-${gid} .panel-hd strong`);
+  if(hd) hd.textContent=fmtN(groupTotal(g));
+  renderGroupChart(g);
+  // refresh bar btn count
+  const btns=document.querySelectorAll('.grp-btn');
+  GROUPS.forEach((gr,i)=>{ const cnt=btns[i].querySelector('.cnt'); if(cnt) cnt.textContent=gr.items.length; });
+}
+
+function rebindEdits(gid){
+  const g=GROUPS.find(x=>x.id===gid);
+  document.querySelectorAll(`#tb-${gid} input`).forEach((inp,i)=>{
+    const row=Math.floor(i/2);
+    const field=i%2===0?'qtd':'unit';
+    inp.onchange=function(){editItem(gid,row,field,this.value);};
+  });
+}
+
+function refreshGroup(g){
+  document.getElementById('tb-'+g.id).innerHTML=renderRows(g);
+  rebindEdits(g.id);
+  renderGroupChart(g);
+  const btns=document.querySelectorAll('.grp-btn');
+  GROUPS.forEach((gr,i)=>{ const cnt=btns[i].querySelector('.cnt'); if(cnt) cnt.textContent=gr.items.length; });
+}
+
+// ---- SIMULADOR ----
+let simChart=null;
+function runSim(){
+  const markup=+document.getElementById('sl-markup').value;
+  const un=+document.getElementById('sl-un').value;
+  const extra=+document.getElementById('sl-extra').value;
+  document.getElementById('sv-markup').textContent=markup+'%';
+  document.getElementById('sv-un').textContent=un+' un.';
+  document.getElementById('sv-extra').textContent='R$ '+extra.toLocaleString('pt-BR');
+
+  const totalMensal=allTotal()+extra;
+  const custoUnit=totalMensal/un;
+  const precoUnit=custoUnit*(1+markup/100);
+  const margemUnit=precoUnit-custoUnit;
+  const fat=precoUnit*un;
+
+  document.getElementById('prec-kpis').innerHTML=`
+    <div class="kpi"><div class="lbl">Custo base/mês</div><div class="val r">${fmt(totalMensal)}</div></div>
+    <div class="kpi"><div class="lbl">Custo unitário</div><div class="val">${fmt(custoUnit)}</div></div>
+    <div class="kpi"><div class="lbl">Preço sugerido</div><div class="val g">${fmt(precoUnit)}</div></div>
+    <div class="kpi"><div class="lbl">Margem unitária</div><div class="val a">${fmt(margemUnit)}</div></div>
+    <div class="kpi"><div class="lbl">Faturamento/mês</div><div class="val b">${fmt(fat)}</div></div>
+  `;
+
+  const grpLabels=GROUPS.map(g=>g.label);
+  const grpUnit=GROUPS.map(g=>parseFloat((groupTotal(g)/un).toFixed(2)));
+  const extraUnit=parseFloat((extra/un).toFixed(2));
+  const markupUnit=parseFloat(margemUnit.toFixed(2));
+
+  if(simChart) simChart.destroy();
+  simChart=new Chart(document.getElementById('c-sim'),{
+    type:'bar',
+    data:{
+      labels:['Composição do preço unitário'],
+      datasets:[
+        ...GROUPS.map((g,i)=>({label:g.label,data:[grpUnit[i]],backgroundColor:g.color+'cc'})),
+        {label:'Frete/Extra',data:[extraUnit],backgroundColor:'#88878099'},
+        {label:'Margem (markup)',data:[markupUnit],backgroundColor:'#1D9E7599'},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:12}}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'R$ '+v.toLocaleString('pt-BR')}}}
+    }
+  });
+}
+
+// ---- IMPORT / EXPORT ----
+function handleFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws);
+      let added=0;
+      rows.forEach(row=>{
+        const grpRaw=(row['grupo']||row['Grupo']||'').toLowerCase().trim();
+        const g=GROUPS.find(x=>x.id===grpRaw||x.label.toLowerCase()===grpRaw);
+        if(!g) return;
+        const nome=String(row['nome']||row['Nome']||'').trim(); if(!nome) return;
+        g.items.push({
+          nome,
+          qtd:parseFloat(row['quantidade']||row['Quantidade']||1),
+          unit:parseFloat(row['custo_unitario']||row['Custo Unitário']||row['custo unitario']||0),
+          cat:String(row['categoria']||row['Categoria']||'—')
+        });
+        added++;
+      });
+      document.getElementById('imp-result').innerHTML=`<span style="color:#1D9E75;font-size:13px;font-weight:500"><i class="ti ti-check"></i> ${added} item(ns) importado(s)!</span>`;
+      toast(`${added} itens importados`);
+    }catch(err){
+      document.getElementById('imp-result').innerHTML=`<span style="color:#E24B4A;font-size:13px"><i class="ti ti-alert-circle"></i> Erro ao ler o arquivo.</span>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function exportCSV(){
+  const header='grupo,nome,quantidade,custo_unitario,categoria';
+  const rows=[];
+  GROUPS.forEach(g=>g.items.forEach(i=>rows.push(`${g.label},${i.nome},${i.qtd},${i.unit},${i.cat}`)));
+  const csv=[header,...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='tradeprice_custos.csv'; a.click();
+  toast('CSV exportado');
+}
+
+// init
+renderDashboard();
+</script>
